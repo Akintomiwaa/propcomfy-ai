@@ -1,6 +1,6 @@
 # PropComfy AI — Fresh MVP
 
-Landing-first flow similar to Revi: category tags (Service Apartment, Land, Rent), location cards with specifics, laws and payment options summaries, and a chat helper.
+Landing-first flow similar to: category tags (Service Apartment, Land, Rent), location cards with specifics, laws and payment options summaries, and a chat helper.
 
 Run locally
 - `cd propcomfy-ai && npm i`
