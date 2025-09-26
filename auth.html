@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PropComfy — Sign In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme: { extend: { fontFamily: { grotesk: ['Space Grotesk','ui-sans-serif','system-ui'] } } } };
+    </script>
+  </head>
+  <body class="min-h-screen bg-[#0a0a0a] text-[#f3f4f6] font-grotesk">
+    <div class="w-full px-4 md:px-8">
+      <nav class="sticky top-2 z-40">
+        <div class="flex items-center justify-between gap-4 rounded-[14px] border border-[#1a1a1d] bg-[#0e0e0f]/75 backdrop-blur px-3 py-2 shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-gradient-to-b from-[#d6b14d] to-[#b99328]"></span>
+            <a href="./no-build.html" class="text-[#f3f4f6] font-semibold tracking-[.02em]">PropComfy</a>
+          </div>
+          <a href="./no-build.html" class="opacity-90">Back to Home</a>
+        </div>
+      </nav>
+
+      <main class="pt-2">
+        <section class="grid grid-cols-1 md:grid-cols-2 min-h-[calc(100vh-72px)]">
+          <!-- Left: full-height image -->
+          <div class="relative order-2 md:order-1 md:sticky md:top-[72px] md:h-[calc(100vh-72px)]">
+            <img src="https://picsum.photos/seed/propcomfy-auth/2000/1600" alt="PropComfy apartments" class="w-full h-full object-cover" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/1200x800/0e0e0f/9aa4b2?text=PropComfy'">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+            <div class="absolute left-6 right-6 bottom-8">
+              <div class="text-[26px] md:text-[32px] font-extrabold">Your stay, simplified</div>
+              <p class="text-[#d4d7dd] text-sm md:text-[15px] mt-2 max-w-[560px]">Verified serviced apartments. Flexible deposits. Instant virtual accounts.</p>
+            </div>
+          </div>
+          <!-- Right: form area -->
+          <div class="order-1 md:order-2 bg-[#0e0e0f] border-l border-[#1a1a1d] flex items-center justify-center p-6 md:p-12">
+            <div class="w-full max-w-[460px] mx-auto text-center">
+              <h1 id="auth-title" class="text-[26px] md:text-[32px] font-extrabold">Let’s get you settled</h1>
+              <p id="auth-sub" class="text-[#d4d7dd] mt-2">Book verified apartments with flexible deposits and instant payments.</p>
+
+              <div class="mt-6 flex gap-2 justify-center">
+                <button id="tab-signin" class="tab active border border-[#1a1a1d] rounded-[10px] px-4 py-2 bg-[#141414]">Sign In</button>
+                <button id="tab-create" class="tab border border-[#1a1a1d] rounded-[10px] px-4 py-2 bg-[#0d0d0e]">Create Account</button>
+              </div>
+
+              <form id="form-signin" class="mt-6 grid grid-cols-1 gap-5">
+                <label class="text-sm text-left">Email
+                  <input required type="email" name="email" class="mt-2 w-full bg-transparent border-0 border-b border-[#2a2a2e] rounded-none px-0 py-3 focus:outline-none focus:border-[#d6b14d] placeholder-[#a0a4ad]" placeholder="you@example.com"/>
+                </label>
+                <label class="text-sm text-left">Phone (optional)
+                  <input type="tel" name="phone" class="mt-2 w-full bg-transparent border-0 border-b border-[#2a2a2e] rounded-none px-0 py-3 focus:outline-none focus:border-[#d6b14d] placeholder-[#a0a4ad]" placeholder="e.g. 0803…"/>
+                </label>
+                <button class="mt-2 inline-block border border-[#1a1a1d] rounded-[10px] px-5 py-2.5 bg-gradient-to-b from-[#d6b14d] to-[#b99328] text-black font-semibold">Continue</button>
+              </form>
+
+              <form id="form-create" class="hidden mt-6 grid grid-cols-1 gap-5">
+                <label class="text-sm text-left">Full name
+                  <input required name="name" class="mt-2 w-full bg-transparent border-0 border-b border-[#2a2a2e] rounded-none px-0 py-3 focus:outline-none focus:border-[#d6b14d] placeholder-[#a0a4ad]" placeholder="Jane Doe"/>
+                </label>
+                <label class="text-sm text-left">Email
+                  <input required type="email" name="email" class="mt-2 w-full bg-transparent border-0 border-b border-[#2a2a2e] rounded-none px-0 py-3 focus:outline-none focus:border-[#d6b14d] placeholder-[#a0a4ad]" placeholder="you@example.com"/>
+                </label>
+                <label class="text-sm text-left">Phone
+                  <input required type="tel" name="phone" class="mt-2 w-full bg-transparent border-0 border-b border-[#2a2a2e] rounded-none px-0 py-3 focus:outline-none focus:border-[#d6b14d] placeholder-[#a0a4ad]" placeholder="e.g. 0803…"/>
+                </label>
+                <button class="mt-2 inline-block border border-[#1a1a1d] rounded-[10px] px-5 py-2.5 bg-gradient-to-b from-[#d6b14d] to-[#b99328] text-black font-semibold">Create account</button>
+              </form>
+
+              <div class="mt-6 flex items-center gap-3">
+                <div class="flex-1 h-px bg-[#1a1a1d]"></div>
+                <span class="text-[#a0a4ad] text-xs">or continue with</span>
+                <div class="flex-1 h-px bg-[#1a1a1d]"></div>
+              </div>
+              <div class="mt-4 grid grid-cols-2 gap-3">
+                <button id="btn-google" class="flex items-center justify-center gap-2 border border-[#1a1a1d] rounded-[10px] px-4 py-2 bg-[#0d0d0e] hover:bg-[#141414]">
+                  <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.6 32.1 29.2 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 3l5.7-5.7C34.4 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 19.3-7.6 20.6-17.5.3-1.5.4-3 .4-4.5 0-1.5-.1-3-.4-4.5z"/>
+                    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.4 16.3 18.8 13 24 13c3 0 5.7 1.1 7.8 3l5.7-5.7C34.4 5.1 29.5 3 24 3 16.1 3 9.2 7.4 6.3 14.7z"/>
+                    <path fill="#4CAF50" d="M24 45c5.2 0 10.1-2 13.7-5.3l-6.3-5.2C29.2 35 26.7 36 24 36c-5.1 0-9.5-3.1-11.3-7.5l-6.5 5C9.2 40.6 16.1 45 24 45z"/>
+                    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-5.1 0-9.5-3.1-11.3-7.5l-6.5 5C9.2 40.6 16.1 45 24 45c10.5 0 19.3-7.6 20.6-17.5.3-1.5.4-3 .4-4.5 0-1.5-.1-3-.4-4.5z" opacity=".1"/>
+                  </svg>
+                  <span>Google</span>
+                </button>
+                <button id="btn-apple" class="flex items-center justify-center gap-2 border border-[#1a1a1d] rounded-[10px] px-4 py-2 bg-[#0d0d0e] hover:bg-[#141414]">
+                  <svg width="16" height="18" viewBox="0 0 384 512" aria-hidden="true" fill="#f3f4f6">
+                    <path d="M318.7 268.7c-.5-51.1 41.7-75.6 43.6-76.9-23.8-34.7-60.7-39.5-73.7-40-31.4-3.2-61.2 18.6-77.1 18.6-16.1 0-40.9-18.1-67.3-17.6-34.6.5-66.3 20.1-83.9 51-35.7 62-9.1 154 25.6 204 17 24.3 37.3 51.6 64.1 50.6 25.7-1 35.5-16.4 66.6-16.4 31 0 40.1 16.4 67.5 16 27.9-.4 45.6-24.6 62.6-49 19.8-28.9 28-56.8 28.5-58.2-.6-.3-54.6-20.9-55.4-82.1zM256.6 85.3c14-17 23.5-40.7 21-64.3-20.3.8-44.9 13.5-59.5 30.5-13 15.1-24.4 39.6-21.3 62.9 22.6 1.8 45.8-11.5 59.8-29.1z"/>
+                  </svg>
+                  <span>Apple</span>
+                </button>
+              </div>
+
+              <p id="note" class="text-[#a0a4ad] text-xs mt-6">By continuing you agree to our terms. This is an MVP; authentication is simulated locally.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      function redirectTarget(){
+        const params = new URLSearchParams(location.search);
+        return params.get('redirect') || './no-build.html';
+      }
+      function signInUser({name, email, phone}){
+        const user = { name: name || email.split('@')[0], email, phone };
+        localStorage.setItem('pc_user', JSON.stringify(user));
+      }
+      document.getElementById('tab-signin').addEventListener('click', ()=>{
+        document.getElementById('tab-signin').classList.add('bg-[#141414]');
+        document.getElementById('tab-create').classList.remove('bg-[#141414]');
+        document.getElementById('form-signin').classList.remove('hidden');
+        document.getElementById('form-create').classList.add('hidden');
+        const t = document.getElementById('auth-title');
+        const s = document.getElementById('auth-sub');
+        if (t) t.textContent = 'Sign in to PropComfy';
+        if (s) s.textContent = 'Access your bookings, assets, and saved places.';
+      });
+      document.getElementById('tab-create').addEventListener('click', ()=>{
+        document.getElementById('tab-create').classList.add('bg-[#141414]');
+        document.getElementById('tab-signin').classList.remove('bg-[#141414]');
+        document.getElementById('form-create').classList.remove('hidden');
+        document.getElementById('form-signin').classList.add('hidden');
+        const t = document.getElementById('auth-title');
+        const s = document.getElementById('auth-sub');
+        if (t) t.textContent = 'Create your PropComfy account';
+        if (s) s.textContent = 'Book verified apartments, pay by virtual account, and track assets.';
+      });
+      document.getElementById('form-signin').addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        signInUser({ email: fd.get('email'), phone: fd.get('phone') });
+        location.href = redirectTarget();
+      });
+      document.getElementById('form-create').addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        signInUser({ name: fd.get('name'), email: fd.get('email'), phone: fd.get('phone') });
+        location.href = redirectTarget();
+      });
+
+      // Simulated third‑party auth
+      const google = document.getElementById('btn-google');
+      const apple = document.getElementById('btn-apple');
+      google && google.addEventListener('click', ()=>{
+        // In real life, redirect to your OAuth endpoint
+        signInUser({ name: 'Google User', email: 'user@gmail.com' });
+        location.href = redirectTarget();
+      });
+      apple && apple.addEventListener('click', ()=>{
+        signInUser({ name: 'Apple User', email: 'user@icloud.com' });
+        location.href = redirectTarget();
+      });
+    </script>
+  </body>
+  </html>

@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PropComfy — Real Estate Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = { theme: { extend: { fontFamily: { grotesk: ['Space Grotesk','ui-sans-serif','system-ui'] } } } };
+      // --- Auth, VA, and Assets (localStorage mock) ---
+      function isLoggedIn(){
+        try { return !!JSON.parse(localStorage.getItem('pc_user')||'null'); } catch { return false; }
+      }
+      function openAccountModal(after){
+        const modal = ensureModal();
+        modal.querySelector('#pc-title').textContent = 'Create account';
+        modal.querySelector('#pc-content').innerHTML = `
+          <form id='pc-form' class='grid grid-cols-1 gap-3'>
+            <input class='bg-transparent border border-[#1a1a1d] rounded-[10px] px-3 py-2' required placeholder='Full name' name='name'/>
+            <input class='bg-transparent border border-[#1a1a1d] rounded-[10px] px-3 py-2' required type='email' placeholder='Email' name='email'/>
+            <input class='bg-transparent border border-[#1a1a1d] rounded-[10px] px-3 py-2' required placeholder='Phone' name='phone'/>
+            <button class='border border-[#1a1a1d] rounded-[10px] px-3 py-2 bg-gradient-to-b from-[#d6b14d] to-[#b99328] text-black font-semibold'>Create account</button>
+          </form>`;
+        const form = modal.querySelector('#pc-form');
+        form.addEventListener('submit', (e)=>{
+          e.preventDefault();
+          const fd = new FormData(form);
+          const user = { name: fd.get('name'), email: fd.get('email'), phone: fd.get('phone') };
+          localStorage.setItem('pc_user', JSON.stringify(user));
+          updateAuthUI();
+          hideModal();
+          if (typeof after === 'function') after();
+        });
+        showModal();
+      }
+      function updateAuthUI(){
+        const auth = document.getElementById('btn-auth');
+        if (auth){
+          if (isLoggedIn()) {
+            auth.textContent = 'Sign Out';
+            auth.href = '#';
+            auth.onclick = (e)=>{ e.preventDefault(); localStorage.removeItem('pc_user'); updateAuthUI(); location.reload(); };
+          } else {
+            auth.textContent = 'Sign In';
+            auth.onclick = null;
+            auth.href = './auth.html?redirect=./no-build.html';
+          }
+        }
+        const assets = document.getElementById('btn-assets');
+        if (assets){
+          const logged = isLoggedIn();
+          assets.classList.toggle('hidden', !logged);
+          assets.onclick = logged ? ((e)=> { e.preventDefault(); openAssetsModal(); }) : null;
+        }
+      }
+      function getOrCreateVirtualAccount(){
+        const key = 'pc_va';
+        let va = null; try { va = JSON.parse(localStorage.getItem(key)||'null'); } catch {}
+        if (!va){
+          const user = JSON.parse(localStorage.getItem('pc_user')||'{}');
+          va = { bank: 'PropBank (Demo)', number: '10' + Math.floor(100000000 + Math.random()*899999999), name: 'PropComfy Custody - ' + (user.name||'Customer') };
+          localStorage.setItem(key, JSON.stringify(va));
+        }
+        return va;
+      }
+      function addAsset(asset){
+        let list = []; try { list = JSON.parse(localStorage.getItem('pc_assets')||'[]'); } catch {}
+        list.push({ id: 'a'+Date.now(), createdAt: new Date().toISOString(), ...asset });
+        localStorage.setItem('pc_assets', JSON.stringify(list));
+      }
+      function openAssetsModal(){
+        const modal = ensureModal();
+        modal.querySelector('#pc-title').textContent = 'My Assets';
+        let list = []; try { list = JSON.parse(localStorage.getItem('pc_assets')||'[]'); } catch {}
+        if (!list.length){ modal.querySelector('#pc-content').innerHTML = "<div class='text-[#d4d7dd]'>No assets yet.</div>"; showModal(); return; }
+        modal.querySelector('#pc-content').innerHTML = `
+          <div class='w-full overflow-x-auto'>
+            <table class='w-full text-sm'>
+              <thead class='text-left text-[#d4d7dd]'><tr><th class='p-2'>Date</th><th class='p-2'>Type</th><th class='p-2'>City</th><th class='p-2'>Amount</th><th class='p-2'>Status</th></tr></thead>
+              <tbody>
+                ${list.map(a => `<tr class='border-t border-[#1a1a1d]'><td class='p-2'>${new Date(a.createdAt).toLocaleString()}</td><td class='p-2'>${a.type}</td><td class='p-2'>${a.city}</td><td class='p-2'>₦${(a.amount||0).toLocaleString('en-NG')}</td><td class='p-2 capitalize'>${a.status||'pending'}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+        showModal();
+      }
+
+      // init
+      updateAuthUI();
+      // mobile nav toggle
+      window.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('nav-toggle');
+        const links = document.getElementById('nav-links');
+        if (btn && links) {
+          btn.addEventListener('click', () => {
+            links.classList.toggle('hidden');
+            links.classList.toggle('flex');
+            links.classList.toggle('flex-col');
+            links.classList.toggle('items-start');
+            links.classList.toggle('gap-2');
+            links.classList.toggle('mt-2');
+          });
+        }
+      });
+    </script>
+  </head>
+  <body class="min-h-screen bg-[#0a0a0a] text-[#f3f4f6] font-grotesk">
+    <!-- subtle background visuals -->
+    <div class="pointer-events-none fixed inset-0 -z-10">
+      <div class="absolute inset-0" style="background: radial-gradient(600px 300px at 50% -120px, rgba(255,255,255,0.05), transparent 60%);"></div>
+      <div class="absolute inset-0" style="background-image: radial-gradient(#ffffff12 1px, transparent 1px); background-size: 22px 22px; opacity: .035;"></div>
+    </div>
+
+    <div class="w-full px-4 md:px-8">
+      <nav class="sticky top-2 z-40">
+        <div class="flex items-center justify-between gap-4 rounded-[14px] border border-[#1a1a1d] bg-[#0e0e0f]/75 backdrop-blur px-3 py-2 shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-gradient-to-b from-[#d6b14d] to-[#b99328]"></span>
+            <span class="text-[#f3f4f6] font-semibold tracking-[.02em]">PropComfy</span>
+          </div>
+
+          <button id="nav-toggle" class="md:hidden border border-[#1a1a1d] rounded-[10px] px-2 py-1 text-xs bg-[#0d0d0e] text-[#d4d7dd]" aria-label="Menu">Menu</button>
+
+          <div id="nav-links" class="hidden md:flex items-center gap-4 text-[14px]">
+            <a href="#" class="opacity-90 hover:opacity-100">Apartments</a>
+            <a href="#" class="opacity-90 hover:opacity-100">Land</a>
+            <a href="#" class="opacity-90 hover:opacity-100">Rent</a>
+            <a href="#" class="opacity-90 hover:opacity-100">Guides</a>
+          </div>
+
+          <div id="nav-search-wrap" class="hidden md:flex items-center flex-1 max-w-[520px] mx-2">
+            <input id="nav-search" class="flex-1 bg-[#0d0d0e] border border-[#1a1a1d] rounded-l-[10px] px-3 py-2 text-[14px] placeholder-[#a0a4ad]" placeholder="Search city, Studio/1BD/2BD, under 100k…" />
+            <button id="nav-search-btn" class="border border-[#1a1a1d] rounded-r-[10px] px-3 py-2 bg-gradient-to-b from-[#d6b14d] to-[#b99328] text-black text-[14px]">Search</button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <a href="#" id="btn-assets" class="opacity-90 hidden">My Assets</a>
+            <a href="./auth.html?redirect=./no-build.html" id="btn-auth" class="opacity-90">Sign In</a>
+          </div>
+        </div>
+      </nav>
+
+      <main class="pt-0 md:pt-2" role="main">
+        <div id="home-root" class="w-full space-y-10"></div>
+      </main>
+    </div>
+
+    <!-- Chat section removed per request -->
+
+    <script>
+      // --- Backend media load (mock) ---
+      const LOCAL_IMG = './assets/apt.jpg';
+      const FALLBACK_IMG = 'https://placehold.co/1200x800/0e0e0f/9aa4b2?text=PropComfy';
+      let HOME_MAP = {};
+      let MEDIA = {};
+      const MEDIA_READY = fetch('./no-build-media.json')
+        .then(r => r.ok ? r.json() : {})
+        .then(j => { MEDIA = j || {}; })
+        .catch(() => { MEDIA = {}; });
+      // Render Netflix-like home rails after media attempt (even if it fails)
+      window.addEventListener('DOMContentLoaded', () => { MEDIA_READY.finally(showHomeRails); });
+
+      function showHomeRails(){
+        const root = document.getElementById('home-root');
+        if (!root) return;
+        const data = serviceApartments();
+        const map = serviceApartmentsMap(data);
+        HOME_MAP = map;
+        const heroLoc = 'Lekki';
+        const heroUnit = (map[heroLoc]||[])[0];
+        root.innerHTML = `
+          <section id='search-results' aria-live='polite'></section>
+          <section class='relative overflow-hidden mb-6'>
+            <img src='${cardImg(heroLoc, "hero")}' alt='${heroLoc} hero' class='w-full h-[60vh] md:h-[68vh] object-cover' referrerpolicy='no-referrer' loading='lazy' onerror="this.onerror=null;this.src='${FALLBACK_IMG}'"/>
+            <div class='absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent'></div>
+            <div class='absolute left-4 bottom-4 max-w-[78%] pr-4'>
+              <div class='text-[28px] md:text-[38px] font-extrabold leading-tight'>${heroUnit ? heroUnit.title : 'Featured Apartments in ' + heroLoc}</div>
+              <div class='text-[#d4d7dd] text-[15px] md:text-[17px] mt-2'>${heroLoc} • ${heroUnit ? `₦${heroUnit.pricePerNight.toLocaleString('en-NG')}/night` : 'Great locations, flexible stays'}</div>
+              <div class='text-[#a0a4ad] text-[13px] md:text-[14px] mt-1'>Book verified stays with flexible deposits and instant virtual accounts.</div>
+              <div class='mt-4 flex gap-3'>
+                <button class='border border-[#d6b14d]/60 text-[#f3f4f6] rounded-[10px] px-4 py-2 bg-[#0d0d0e]/80 hover:bg-[#141414]' id='hero-media'>View media</button>
+                ${heroUnit ? `<button class='border border-[#1a1a1d] rounded-[10px] px-5 py-2.5 bg-gradient-to-b from-[#d6b14d] to-[#b99328] text-black font-semibold' id='hero-book'>Book now</button>` : ''}
+              </div>
+            </div>
+          </section>
+
+          ${renderRail('Service Apartments — Lekki', map['Lekki']||[], 'Lekki')}
+          ${renderRail('Service Apartments — Ikate', serviceApartmentsMap(data)['Ikate']||[], 'Ikate')}
+          ${renderRail('Service Apartments — VI', map['Victoria Island']||[], 'Victoria Island')}
+          ${renderRail('Service Apartments — Ajah', map['Ajah']||[], 'Ajah')}
+
+          ${renderContinueRail()}
+        `;
+        document.getElementById('hero-media')?.addEventListener('click', ()=> openMediaModal(heroLoc));
+        document.getElementById('hero-book')?.addEventListener('click', ()=> heroUnit && openBookingModal({ city: heroLoc, title: heroUnit.title, price: heroUnit.pricePerNight }));
+        attachRailActions(root);
+      }
+
+      function cardImg(city, title=''){
+        const seed = encodeURIComponent(`${city||'city'}-${title||'unit'}`);
+        return `https://picsum.photos/seed/${seed}/1200/800`;
+      }
+      function slugify(s){ return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+      function renderRailCards(units, city){
+        return units.map(u => `
+          <div class='shrink-0 w-[300px] snap-start'>
+            <div class='relative rounded-[12px] overflow-hidden group'>
+              <img src='${cardImg(city, u.title)}' alt='${city} — ${u.title}' class='w-full h-[260px] object-cover transition duration-200 group-hover:scale-[1.03]' referrerpolicy='no-referrer' loading='lazy' onerror="this.onerror=null;this.src='${FALLBACK_IMG}'"/>
+              <div class='absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent'>
+                <div class='text-sm font-semibold'>${u.title}</div>
+                <div class='text-[12px] text-[#d4d7dd]'>₦${u.pricePerNight.toLocaleString('en-NG')}/night • ${u.br===0?'Studio':u.br+' BR'}</div>
+              </div>
+            </div>
+            <div class='mt-2 flex gap-2'>
+              <button class='btn-media border border-[#1a1a1d] rounded-[10px] px-2 py-1 text-sm bg-[#0d0d0e]' data-city='${city}'>Media</button>
+              <button class='btn-book border border-[#1a1a1d] rounded-[10px] px-2 py-1 text-sm bg-[#0d0d0e]' data-city='${city}' data-title='${u.title}' data-price='${u.pricePerNight}'>Book</button>
+              <button class='btn-details border border-[#1a1a1d] rounded-[10px] px-2 py-1 text-sm bg-[#0d0d0e]' data-city='${city}' data-title='${u.title}' data-price='${u.pricePerNight}'>Details</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderRail(title, units, city){
+        if (!units.length) return '';
+        const count = units.length;
+        const minPrice = Math.min.apply(null, units.map(u => u.pricePerNight || 0).filter(Boolean));
+        const subtitle = `${city} • ${count} ${count===1?'unit':'units'}${isFinite(minPrice) && minPrice>0 ? ` • from ₦${minPrice.toLocaleString('en-NG')}/night` : ''}`;
+        const slug = slugify(city);
+        const cards = renderRailCards(ensureMinUnits(units, 12, city), city);
+        return `
+          <section class='mb-8'>
+            <h3 class='mb-1 text-[18px] md:text-[22px] font-bold'>${title}</h3>
+            <p class='mb-3 text-[#a0a4ad] text-[13px] md:text-[14px]'>${subtitle}</p>
+            <div class='mb-2 flex flex-wrap gap-2'>
+              ${['All','Studio','1BD','2BD','3BD','More'].map((label, i) => {
+                const f = label.toLowerCase();
+                const active = label==='All' ? 'border-[rgba(214,177,77,0.45)] bg-[#141414]' : 'border-[#1a1a1d] bg-[#0d0d0e]';
+                return `<button class="rail-filter px-3 py-1.5 rounded-full border text-xs ${active}" data-city="${city}" data-slug="${slug}" data-filter="${f}">${label}</button>`;
+              }).join('')}
+            </div>
+            <div id='cards-${slug}' class='rail-scroll flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2'>${cards}</div>
+            <div class='mt-1 flex justify-end gap-2'>
+              <button class='rail-left border border-[#1a1a1d] rounded-[10px] px-2 py-1 text-xs bg-[#0d0d0e]' data-slug='${slug}' aria-label='Scroll left'>◄</button>
+              <button class='rail-right border border-[#1a1a1d] rounded-[10px] px-2 py-1 text-xs bg-[#0d0d0e]' data-slug='${slug}' aria-label='Scroll right'>►</button>
+            </div>
+          </section>
+        `;
+      }
+
+      function filterUnits(city, filter){
+        const all = HOME_MAP[city] || [];
+        if (!filter || filter==='all') return all;
+        if (filter==='studio') return all.filter(u => (u.br||0) === 0);
+        if (filter==='1bd') return all.filter(u => u.br === 1);
+        if (filter==='2bd') return all.filter(u => u.br === 2);
+        if (filter==='3bd') return all.filter(u => (u.br||0) >= 3);
+        return all;
+      }
+
+      function ensureMinUnits(units, minCount, city){
+        const result = [...(units||[])];
+        const base = (units && units.length) ? units : [{ title: `${city} Apartment`, br: 1, guests: 2, pricePerNight: 80000, highlights: ['Wifi','Security'] }];
+        let i = 0;
+        while (result.length < minCount) {
+          const src = base[i % base.length];
+          result.push({ ...src, title: `${src.title} #${result.length + 1}` });
+          i++;
+        }
+        return result;
+      }
+
+      function renderContinueRail(){
+        let list = []; try { list = JSON.parse(localStorage.getItem('pc_assets')||'[]'); } catch {}
+        if (!list.length) return '';
+        const subtitle = `${list.length} in progress — deposits or bookings`;
+        const cards = list.map(a => `
+          <div class='shrink-0 w-[300px] snap-start'>
+            <div class='rounded-[12px] border border-[#1a1a1d] bg-[#0e0e0f] p-3 h-[170px] flex flex-col justify-between'>
+              <div>
+                <div class='text-sm font-semibold'>${a.type}</div>
+                <div class='text-[12px] text-[#d4d7dd] mt-1'>${a.city} • ₦${(a.amount||0).toLocaleString('en-NG')} • ${a.status||'pending'}</div>
+              </div>
+              <div class='flex gap-2'>
+                <button class='btn-media border border-[#1a1a1d] rounded-[10px] px-2 py-1 text-sm bg-[#0d0d0e]' data-city='${a.city}'>Media</button>
+                <button class='border border-[#1a1a1d] rounded-[10px] px-2 py-1 text-sm bg-gradient-to-b from-[#d6b14d] to-[#b99328] text-black'>Manage</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        return `
+          <section class='mb-6'>
+            <h3 class='mb-1 text-[18px] md:text-[22px] font-bold'>Continue Booking</h3>
+            <p class='mb-3 text-[#a0a4ad] text-[13px] md:text-[14px]'>${subtitle}</p>
+            <div class='flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2'>${cards}</div>
+          </section>
+        `;
+      }
+
+      function attachRailActions(root){
+        root.querySelectorAll('.btn-media')?.forEach(btn => {
+          btn.addEventListener('click', () => openMediaModal(btn.getAttribute('data-city')));
+        });
+        root.querySelectorAll('.btn-book')?.forEach(btn => {
+          btn.addEventListener('click', () => openBookingModal({
+            city: btn.getAttribute('data-city'),
+            title: btn.getAttribute('data-title'),
+            price: Number(btn.getAttribute('data-price'))
+          }));
+        });
+        root.querySelectorAll('.btn-details')?.forEach(btn => {
+          btn.addEventListener('click', () => openDetailsModal({
+            city: btn.getAttribute('data-city'),
+            title: btn.getAttribute('data-title'),
+            price: Number(btn.getAttribute('data-price'))
+          }));
+        });
+        // Scroll buttons per rail
+        root.querySelectorAll('.rail-left')?.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const slug = btn.getAttribute('data-slug');
+            const el = document.getElementById(`cards-${slug}`);
+            el && el.scrollBy({ left: -320, behavior: 'smooth' });
+          });
+        });
+        root.querySelectorAll('.rail-right')?.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const slug = btn.getAttribute('data-slug');
+            const el = document.getElementById(`cards-${slug}`);
+            el && el.scrollBy({ left: 320, behavior: 'smooth' });
+          });
+        });
+        // Filters per rail
+        root.querySelectorAll('.rail-filter')?.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const city = btn.getAttribute('data-city');
+            const slug = btn.getAttribute('data-slug');
+            const filter = btn.getAttribute('data-filter');
+            // set active appearance for this rail only
+            root.querySelectorAll(`.rail-filter[data-slug='${slug}']`).forEach(b => {
+              const isActive = b === btn;
+              b.className = `rail-filter px-3 py-1.5 rounded-full border text-xs ${isActive? 'border-[rgba(214,177,77,0.45)] bg-[#141414]' : 'border-[#1a1a1d] bg-[#0d0d0e]'}`;
+            });
+            const units = ensureMinUnits(filterUnits(city, filter), 12, city);
+            const cardsHtml = renderRailCards(units, city);
+            const cardsEl = document.getElementById(`cards-${slug}`);
+            if (cardsEl) {
+              cardsEl.innerHTML = cardsHtml;
+              attachRailActions(cardsEl); // re-bind media/book/details
+            }
+          });
+        });
+      }
+
+      // --- Search ---
+      function allUnits(){
+        const map = Object.keys(HOME_MAP).length ? HOME_MAP : serviceApartmentsMap(serviceApartments());
+        const arr = [];
+        Object.entries(map).forEach(([city, list]) => {
+          (list||[]).forEach(u => arr.push({ city, ...u }));
+        });
+        return arr;
+      }
+      function parseBudget(q){
+        const m = q.match(/(?:under|<=?|max|below)\s*(?:₦|ngn|#)?\s*([\d,.]+)\s*([km])?/i);
+        if (!m) return null;
+        let n = Number(String(m[1]).replace(/[,]/g,''));
+        if (!isFinite(n)) return null;
+        if (m[2]) n = m[2].toLowerCase()==='k' ? n*1000 : n*1_000_000;
+        return Math.round(n);
+      }
+      function parseBedrooms(q){
+        if (/studio|\b0\s*bd|\b0\s*br/i.test(q)) return 0;
+        const m = q.match(/(\d+)\s*(?:bd|br|bed(?:rooms?)?)/i);
+        return m ? Number(m[1]) : null;
+      }
+      function parseCity(q){
+        if (/\bvi\b|victoria\s*island/i.test(q)) return 'Victoria Island';
+        if (/lekki|ikate/i.test(q)) return /ikate/i.test(q) ? 'Ikate' : 'Lekki';
+        if (/ajah/i.test(q)) return 'Ajah';
+        if (/ikeja/i.test(q)) return 'Ikeja';
+        return '';
+      }
+      function runSearch(query){
+        const q = (query||'').trim();
+        const container = document.getElementById('search-results');
+        if (!q){ container.innerHTML=''; return; }
+        const city = parseCity(q);
+        const bd = parseBedrooms(q);
+        const budget = parseBudget(q);
+        const res = allUnits().filter(u => {
+          if (city && !new RegExp(city,'i').test(u.city)) return false;
+          if (bd!==null && (u.br||0)!==bd) return false;
+          if (budget && (u.pricePerNight||0) > budget) return false;
+          return new RegExp(q.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&'),'i').test(u.title) || !q;
+        });
+        const title = `Search results`;
+        const cards = renderRailCards(ensureMinUnits(res, 8, city||'Lagos'), city||'Lagos');
+        container.innerHTML = `
+          <section class='mb-8'>
+            <h3 class='mb-1 text-[18px] md:text-[22px] font-bold'>${title}</h3>
+            <p class='mb-3 text-[#a0a4ad] text-[13px] md:text-[14px]'>${city||'All Lagos'}${bd!==null?` • ${bd===0?'Studio':bd+' BD'}`:''}${budget?` • under ₦${budget.toLocaleString('en-NG')}`:''}</p>
+            <div class='flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2'>${cards}</div>
+          </section>`;
+        attachRailActions(container);
+        container.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+      // bind search
+      window.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('nav-search');
+        const btn = document.getElementById('nav-search-btn');
+        if (input && btn){
+          input.addEventListener('keydown', (e)=>{ if (e.key==='Enter'){ runSearch(input.value); }});
+          btn.addEventListener('click', ()=> runSearch(input.value));
+        }
+      });
+
+      function openDetailsModal({ city, title, price }){
+        const modal = ensureModal();
+        modal.querySelector('#pc-title').textContent = title;
+        modal.querySelector('#pc-content').innerHTML = `
+          <div class='grid grid-cols-1 md:grid-cols-2 gap-3'>
+            <img src='${imgFor(city)}' alt='${city} — ${title}' class='w-full h-48 object-cover rounded-[10px]' referrerpolicy='no-referrer' loading='lazy' onerror="this.onerror=null;this.src='${FALLBACK_IMG}'"/>
+            <div>
+              <div class='text-[#d4d7dd] text-sm mb-2'>${city} • ₦${Number(price).toLocaleString('en-NG')}/night</div>
+              <div class='flex gap-2'>
+                <button class='border border-[#1a1a1d] rounded-[10px] px-3 py-2 bg-[#0d0d0e]' id='dt-media'>View media</button>
+                <button class='border border-[#1a1a1d] rounded-[10px] px-3 py-2 bg-gradient-to-b from-[#d6b14d] to-[#b99328] text-black' id='dt-book'>Book</button>
+              </div>
+            </div>
+          </div>`;
+        modal.querySelector('#dt-media')?.addEventListener('click', ()=> openMediaModal(city));
+        modal.querySelector('#dt-book')?.addEventListener('click', ()=> openBookingModal({ city, title, price }));
+        showModal();
+      }
+
+      function showLand(){
+        const container = document.querySelector('[role="main"] > div');
+        if (!container) return;
+        container.innerHTML = `
+          <div class='text-left'>
+            <button id='backBtn' class='text-sm text-[#d4d7dd] border border-[#1a1a1d] rounded-[10px] px-3 py-1 bg-[#0d0d0e] mb-4'>← Back</button>
+            <h2 class='text-xl font-semibold mb-3'>Available Land Locations</h2>
+            <div class='grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-[minmax(0,1fr)] items-stretch'>
+              ${landLocations().map(renderLoc).join('')}
+            </div>
+          </div>`;
+        document.getElementById('backBtn')?.addEventListener('click', ()=> location.reload());
+        // attach handlers for media and payment
+        container.querySelectorAll('.btn-media')?.forEach(btn => {
+          btn.addEventListener('click', () => openMediaModal(btn.getAttribute('data-city')));
+        });
+        container.querySelectorAll('.btn-pay')?.forEach(btn => {
+          btn.addEventListener('click', () => openPaymentModal(
+            btn.getAttribute('data-city'),
+            btn.getAttribute('data-type')||'Land Reservation',
+            Number(btn.getAttribute('data-amount')||'500000')
+          ));
+        });
+      }
+      function landLocations(){
+        return [
+          {city:'Lekki', neighborhoods:['Lekki Phase 1','Chevron'], highlights:['Gated estates','Close to VI'], laws:['Tenancy Law (Lagos)','Service Charge Transparency'], deposit:20, installments:'3–12 month plans'},
+          {city:'Abuja', neighborhoods:['Central Area','Gwarinpa'], highlights:['Planned districts','Good roads'], laws:['FCTA Land Administration','Short-let Policies'], deposit:20, installments:'6–18 month dev. plans'},
+          {city:'Ikeja', neighborhoods:['GRA','Allen'], highlights:['Airport access','Corporate zones'], laws:['Planning Permit','Title verification'], deposit:15, installments:'Quarterly options'},
+        ];
+      }
+      function resolveCityKey(city){
+        if (/^vi$/i.test(city)) return 'Victoria Island';
+        if (/ikate/i.test(city)) return 'Lekki';
+        return city;
+      }
+      function imgFor(city){
+        const cityKey = resolveCityKey(city);
+        const key = (cityKey||'').toLowerCase();
+        const entry = MEDIA[cityKey] || MEDIA[capitalize(key)] || MEDIA[key?.toUpperCase?.()] || null;
+        const first = entry?.media?.find?.((m) => m.type !== 'video')?.src;
+        if (first) return first;
+        // Fallbacks
+        if (/lekki|ikate/i.test(cityKey)) return 'https://images.unsplash.com/photo-1502005229762-cf1b2da7c05c?q=80&w=1200&auto=format&fit=crop';
+        if (/victoria\s*island|\bvi\b/i.test(cityKey)) return 'https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?q=80&w=1200&auto=format&fit=crop';
+        if (/ajah/i.test(cityKey)) return 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop';
+        if (/abuja/i.test(cityKey)) return 'https://images.unsplash.com/photo-1499955085172-a104c9463ece?q=80&w=1200&auto=format&fit=crop';
+        if (/ikeja/i.test(cityKey)) return 'https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop';
+        return 'https://images.unsplash.com/photo-1505691723518-36a5ac3b2d95?q=80&w=1200&auto=format&fit=crop';
+      }
+      function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+      function renderLoc(l){
+        return `<div class='bg-[#0e0e0f] border border-[#1a1a1d] rounded-[16px] p-4 h-full flex flex-col w-full min-w-0'>
+          <img src='${cardImg(l.city, "land")}' alt='${l.city} preview' referrerpolicy='no-referrer' loading='lazy' onerror="this.onerror=null;this.src='${FALLBACK_IMG}'" class='w-full h-60 object-cover rounded-[10px] mb-3' />
+          <div class='text-lg font-semibold'>${l.city}</div>
+          <div class='text-[#d4d7dd] text-sm mt-1'>${l.neighborhoods.join(' • ')}</div>
+          <div class='text-[#d4d7dd] text-sm mt-2'>Highlights: ${l.highlights.join(' • ')}</div>
+          <div class='text-[#d4d7dd] text-sm mt-2'>Laws: ${l.laws.join(' • ')}</div>
+          <div class='text-[#d4d7dd] text-sm mt-2'>Payments: Deposit from ${l.deposit}% • ${l.installments}</div>
+          <div class='mt-auto pt-3 flex gap-2'>
+            <button class='btn-media border border-[#1a1a1d] rounded-[10px] px-3 py-2 bg-[#0d0d0e]' data-city='${l.city}'>View media</button>
+            <button class='btn-pay border border-[#1a1a1d] rounded-[10px] px-3 py-2 bg-[#0d0d0e]' data-city='${l.city}' data-type='Land Reservation' data-amount='500000'>Proceed to payment</button>
+          </div>
+        </div>`;
+      }
+
+      // Service apartments view (Lagos only) with location tags
+      let serviceSelected = 'Lekki';
+      function showService(){
+        const container = document.querySelector('[role="main"] > div');
+        if (!container) return;
+        const data = serviceApartments();
+        const tags = ['Lekki','Ajah','Ikate','VI'];
+        container.innerHTML = `
+          <div class='text-left'>
+            <button id='backBtn' class='text-sm text-[#d4d7dd] border border-[#1a1a1d] rounded-[10px] px-3 py-1 bg-[#0d0d0e] mb-4'>← Back</button>
+            <h2 class='text-xl font-semibold mb-2'>Lagos Service Apartments</h2>
+            <p class='text-[#d4d7dd] text-sm mb-3'>Choose a location tag, then select a unit and enter nights to book.</p>
+            <div id='svc-tags' class='flex flex-wrap gap-2 mb-4'>
+              ${tags.map(t => `<button data-tag='${t}' class='svc-tag px-3 py-2 rounded-full border ${t===serviceSelected?"border-[rgba(214,177,77,0.45)] bg-[#141414]":"border-[#1a1a1d] bg-[#0d0d0e]"} text-sm'>${t}</button>`).join('')}
+            </div>
+            <div id='svc-grid' class='grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-[minmax(0,1fr)] items-stretch'>
+              ${renderServiceUnits(data, serviceSelected)}
+            </div>
+          </div>`;
+        document.getElementById('backBtn')?.addEventListener('click', ()=> location.reload());
+        // Tag switching
+        container.querySelectorAll('.svc-tag').forEach(tagBtn => {
+          tagBtn.addEventListener('click', () => {
+            serviceSelected = tagBtn.getAttribute('data-tag');
+            // Update tag styles
+            container.querySelectorAll('.svc-tag').forEach(b=>{
+              const active = b.getAttribute('data-tag')===serviceSelected;
+              b.className = `svc-tag px-3 py-2 rounded-full border text-sm ${active? 'border-[rgba(214,177,77,0.45)] bg-[#141414]':'border-[#1a1a1d] bg-[#0d0d0e]'}`;
+            });
+            // Render units
+            const grid = container.querySelector('#svc-grid');
+            grid.innerHTML = renderServiceUnits(data, serviceSelected);
+            attachServiceActions(container);
+          });
+        });
+        attachServiceActions(container);
+      }
+      function attachServiceActions(container){
+        container.querySelectorAll('.btn-media')?.forEach(btn => {
+          btn.addEventListener('click', () => openMediaModal(btn.getAttribute('data-city')));
+        });
+        container.querySelectorAll('.btn-book')?.forEach(btn => {
+          btn.addEventListener('click', () => openBookingModal({
+            city: btn.getAttribute('data-city'),
+            title: btn.getAttribute('data-title'),
+            price: Number(btn.getAttribute('data-price'))
+          }));
+        });
+      }
+      function renderServiceUnits(data, tag){
+        const map = serviceApartmentsMap(data);
+        const key = tag === 'VI' ? 'Victoria Island' : tag;
+        const units = map[key] || [];
+        return units.map(u => renderServiceUnit(key, u)).join('');
+      }
+      function serviceApartmentsMap(data){
+        const m = {};
+        data.forEach(s => { m[s.location] = s.units; });
+        // Split Ikate as its own tag -> reuse Lekki units filtered by Ikate keyword if any, else first two
+        m['Ikate'] = (m['Lekki']||[]).filter(u=>/ikate/i.test(u.title)).concat((m['Lekki']||[]).slice(0,1));
+        return m;
+      }
+      function serviceApartments(){
+        // Lagos only
+        return [
+          { location: 'Lekki', units: [
+            { title: 'Cozy Studio by the Lagoon', br: 0, guests: 2, pricePerNight: 65000, highlights: ['Wifi','Kitchen','Security'] },
+            { title: 'Bright 1BR with Pool Access', br: 1, guests: 3, pricePerNight: 85000, highlights: ['Pool','Gym','Wifi'] },
+          ]},
+          { location: 'Victoria Island', units: [
+            { title: 'Modern 1BR with Terrace', br: 1, guests: 3, pricePerNight: 120000, highlights: ['Terrace','Security','AC'] },
+            { title: 'Sea View 2BR Apartment', br: 2, guests: 5, pricePerNight: 145000, highlights: ['Sea view','Generator','Parking'] },
+          ]},
+          { location: 'Ajah', units: [
+            { title: 'Minimalist Studio Close to Palms', br: 0, guests: 2, pricePerNight: 50000, highlights: ['Wifi','AC','Security'] },
+          ]},
+          { location: 'Ikeja', units: [
+            { title: 'Ikeja GRA 1BR Near Airport', br: 1, guests: 2, pricePerNight: 60000, highlights: ['Wifi','Parking','Security'] },
+          ]},
+        ];
+      }
+      function renderServiceUnit(city, u){
+        return `<div class='bg-[#0e0e0f] border border-[#1a1a1d] rounded-[16px] p-4 h-full flex flex-col w-full min-w-0'>
+          <img src='${cardImg(city, u.title)}' alt='${city} — ${u.title}' referrerpolicy='no-referrer' loading='lazy' onerror="this.onerror=null;this.src='${FALLBACK_IMG}'" class='w-full h-60 object-cover rounded-[10px] mb-3' />
+          <div class='font-semibold'>${u.title}</div>
+          <div class='text-[#d4d7dd] text-sm mt-1'>${city} • ${u.br === 0 ? 'Studio' : u.br + ' BR'} • Sleeps ${u.guests}</div>
+          <div class='text-[#d4d7dd] text-sm mt-1'>₦${u.pricePerNight.toLocaleString('en-NG')}/night</div>
+          <div class='text-[#d4d7dd] text-sm mt-1'>${u.highlights.join(' • ')}</div>
+          <div class='mt-auto pt-3 flex gap-2'>
+            <button class='btn-media border border-[#1a1a1d] rounded-[10px] px-3 py-2 bg-[#0d0d0e]' data-city='${city}'>View media</button>
+            <button class='btn-book border border-[#1a1a1d] rounded-[10px] px-3 py-2 bg-[#0d0d0e]' data-city='${city}' data-title='${u.title}' data-price='${u.pricePerNight}'>Book</button>
+          </div>
+        </div>`;
+      }
+      function openBookingModal({ city, title, price }){
+        if (!isLoggedIn()) { openAccountModal(()=> openBookingModal({ city, title, price })); return; }
+        const modal = ensureModal();
+        modal.querySelector('#pc-title').textContent = `Book — ${title}`;
+        modal.querySelector('#pc-content').innerHTML = `
+          <div class='grid grid-cols-1 gap-3'>
+            <div class='text-[#d4d7dd] text-sm'>${city} • ₦${Number(price).toLocaleString('en-NG')}/night</div>
+            <label class='text-sm'>Check-in date <input id='bk-date' type='date' class='mt-1 bg-transparent border border-[#1a1a1d] rounded-[10px] px-3 py-2 w-full'/></label>
+            <label class='text-sm'>Nights <input id='bk-nights' type='number' min='1' value='2' class='mt-1 bg-transparent border border-[#1a1a1d] rounded-[10px] px-3 py-2 w-full'/></label>
+            <div id='bk-total' class='text-sm'>Total: ₦${(Number(price)*2).toLocaleString('en-NG')}</div>
+            <button id='bk-pay' class='border border-[#1a1a1d] rounded-[10px] px-3 py-2 bg-gradient-to-b from-[#d6b14d] to-[#b99328] text-black font-semibold'>Proceed to payment</button>
+          </div>`;
+        const nightsEl = modal.querySelector('#bk-nights');
+        const totalEl = modal.querySelector('#bk-total');
+        nightsEl.addEventListener('input', ()=> {
+          const n = Math.max(1, Number(nightsEl.value||'1'));
+          totalEl.textContent = `Total: ₦${(Number(price)*n).toLocaleString('en-NG')}`;
+        });
+        modal.querySelector('#bk-pay')?.addEventListener('click', ()=> {
+          const n = Math.max(1, Number(nightsEl.value||'1'));
+          const amt = Number(price)*n;
+          openPaymentModal(city, `Apartment Booking — ${title}`, amt);
+        });
+        showModal();
+      }
+
+      // Media modal
+      function ensureModal(){
+        let modal = document.getElementById('pc-modal');
+        if (modal) return modal;
+        modal = document.createElement('div');
+        modal.id = 'pc-modal';
+        modal.className = 'fixed inset-0 hidden items-center justify-center bg-black/60 z-50 p-4';
+        modal.innerHTML = `
+          <div class='max-w-3xl w-full bg-[#0e0e0f] border border-[#1a1a1d] rounded-[16px] p-4 relative'>
+            <button id='pc-close' class='absolute top-2 right-2 text-sm border border-[#1a1a1d] rounded-[10px] px-2 py-1 bg-[#0d0d0e]'>✕</button>
+            <div id='pc-title' class='text-lg font-semibold mb-2'>Media</div>
+            <div id='pc-content' class='grid grid-cols-1 md:grid-cols-2 gap-3'>Loading…</div>
+          </div>`;
+        document.body.appendChild(modal);
+        modal.querySelector('#pc-close')?.addEventListener('click', () => hideModal());
+        modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+        return modal;
+      }
+      function showModal(){ ensureModal().classList.remove('hidden'); ensureModal().classList.add('flex'); }
+      function hideModal(){ const m = ensureModal(); m.classList.add('hidden'); m.classList.remove('flex'); }
+      function openMediaModal(city){
+        const modal = ensureModal();
+        modal.querySelector('#pc-title').textContent = `Media — ${city}`;
+        const items = mediaFor(city);
+        const html = items.map((it, idx) => {
+          if (it.type === 'video') return `<video class='w-full rounded-[10px] cursor-zoom-in' data-type='video' data-src='${it.src}' controls src='${it.src}'></video>`;
+          return `<img class='w-full h-48 object-cover rounded-[10px] cursor-zoom-in' data-type='image' data-src='${it.src}' src='${it.src}' alt='${city} media'/>`;
+        }).join('');
+        modal.querySelector('#pc-content').innerHTML = html;
+        modal.querySelectorAll('[data-src]')?.forEach(el => {
+          el.addEventListener('click', () => openLightbox(el.getAttribute('data-src'), el.getAttribute('data-type')));
+        });
+        showModal();
+      }
+      function mediaFor(city){
+        const key = resolveCityKey(city);
+        const entry = MEDIA[key] || MEDIA[capitalize((key||''))];
+        const base = [{ type: 'image', src: LOCAL_IMG }];
+        if (entry?.media?.length) return base.concat(entry.media);
+        // Fallback using local image + sample assets
+        return base.concat([
+          { type: 'image', src: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1200&auto=format&fit=crop' },
+          { type: 'video', src: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+        ]);
+      }
+
+      // Lightbox for closer look
+      function ensureLightbox(){
+        let lb = document.getElementById('pc-lightbox');
+        if (lb) return lb;
+        lb = document.createElement('div');
+        lb.id = 'pc-lightbox';
+        lb.className = 'fixed inset-0 hidden items-center justify-center bg-black/80 z-50 p-4';
+        lb.innerHTML = `<div class='max-w-5xl w-full relative'>
+          <button id='pc-lb-close' class='absolute -top-2 -right-2 text-sm border border-[#1a1a1d] rounded-[10px] px-2 py-1 bg-[#0d0d0e]'>✕</button>
+          <div id='pc-lb-inner' class='w-full'></div>
+        </div>`;
+        document.body.appendChild(lb);
+        lb.querySelector('#pc-lb-close')?.addEventListener('click', () => hideLightbox());
+        lb.addEventListener('click', (e)=> { if (e.target === lb) hideLightbox(); });
+        return lb;
+      }
+      function openLightbox(src, type='image'){
+        const lb = ensureLightbox();
+        lb.querySelector('#pc-lb-inner').innerHTML = type === 'video'
+          ? `<video class='w-full max-h-[80vh] rounded-[12px]' controls src='${src}'></video>`
+          : `<img class='w-full max-h-[80vh] object-contain rounded-[12px]' loading='eager' src='${src}' />`;
+        lb.classList.remove('hidden'); lb.classList.add('flex');
+      }
+      function hideLightbox(){ const lb = ensureLightbox(); lb.classList.add('hidden'); lb.classList.remove('flex'); }
+
+      // Payment modal with account gating and virtual account
+      function openPaymentModal(city, type='Reservation', amount=500000){
+        if (!isLoggedIn()) { openAccountModal(() => openPaymentModal(city, type, amount)); return; }
+        const modal = ensureModal();
+        modal.querySelector('#pc-title').textContent = `Proceed to payment — ${city}`;
+        const va = getOrCreateVirtualAccount();
+        modal.querySelector('#pc-content').innerHTML = `
+          <div class='col-span-2 text-[#d4d7dd] text-sm mb-2'>Transfer your reservation deposit to your dedicated virtual account.</div>
+          <div class='bg-[#0d0d0e] border border-[#1a1a1d] rounded-[12px] p-3 grid grid-cols-1 md:grid-cols-2 gap-3'>
+            <div><div class='text-[#f3f4f6]'>Bank</div><div class='font-semibold'>${va.bank}</div></div>
+            <div><div class='text-[#f3f4f6]'>Account Number</div><div class='font-semibold'>${va.number}</div></div>
+            <div class='md:col-span-2'><div class='text-[#f3f4f6]'>Account Name</div><div class='font-semibold'>${va.name}</div></div>
+            <div class='md:col-span-2'>
+              <button id='pc-paid' class='mt-1 border border-[#1a1a1d] rounded-[10px] px-3 py-2 bg-gradient-to-b from-[#d6b14d] to-[#b99328] text-black font-semibold'>I’ve paid the deposit</button>
+            </div>
+          </div>`;
+        const paidBtn = modal.querySelector('#pc-paid');
+        paidBtn && paidBtn.addEventListener('click', ()=> {
+          addAsset({ city, type, amount, currency: 'NGN', status: 'pending' });
+          alert('Payment recorded. View it in My Assets.');
+          hideModal();
+        });
+        showModal();
+      }
+    </script>
+  </body>
+  </html>

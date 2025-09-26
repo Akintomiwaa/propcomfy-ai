@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PropComfy — Real Estate AI</title>
+    <meta name="description" content="Search serviced apartments, land, and rentals. Learn local laws, deposit and installment options, and build trust with transparent info." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="min-h-screen bg-[#0a0a0a] text-[#f3f4f6] font-[Space_Grotesk]">
+    <div id="root" class="p-4">Loading PropComfy… If this persists, check the dev server console.</div>
+    <script type="module">
+      import('/src/main.tsx').catch((err) => {
+        const el = document.getElementById('root');
+        if (el) {
+          el.style.whiteSpace = 'pre-wrap';
+          el.textContent = 'Failed to load the app. Is the Vite dev server running?\n' + String(err);
+        }
+        console.error('App load error:', err);
+      });
+    </script>
+  </body>
+  </html>

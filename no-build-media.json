@@ -1,0 +1,25 @@
+{
+  "Lekki": {
+    "media": [
+      { "type": "image", "src": "https://images.unsplash.com/photo-1502005229762-cf1b2da7c05c?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "image", "src": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "video", "src": "https://www.w3schools.com/html/mov_bbb.mp4" },
+      { "type": "gif", "src": "https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif" }
+    ]
+  },
+  "Abuja": {
+    "media": [
+      { "type": "image", "src": "https://images.unsplash.com/photo-1499955085172-a104c9463ece?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "image", "src": "https://images.unsplash.com/photo-1505691723518-36a5ac3b2d95?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "gif", "src": "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif" }
+    ]
+  },
+  "Ikeja": {
+    "media": [
+      { "type": "image", "src": "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "image", "src": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop" },
+      { "type": "video", "src": "https://www.w3schools.com/html/movie.mp4" }
+    ]
+  }
+}
+
